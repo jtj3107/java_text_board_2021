@@ -59,25 +59,26 @@ public class App {
 				}
 			} else if (command.startsWith("/usr/article/detail")) {
 				String queryString = command.indexOf("?") > 0?command.split("\\?", 2)[1]:null;
-					
+				
 				if(queryString == null) {
 					System.out.println("id를 입력해주세요.");
 					continue;
 				}
 				
 				String[] queryStringBits = queryString.split("&");
-
+				
 				int id = 0;
-
-				for (String queryStringBit : queryStringBits) {
-					String[] queryStringBitBits = queryStringBit.split("=", 2);
+				
+				for(String queryStringBit : queryStringBits) {
+					String[] queryStringBitBits = queryStringBit.split("=");
 					String paramName = queryStringBitBits[0];
 					String paramValue = queryStringBitBits[1];
-
-					if (paramName.equals("id")) {
+					
+					if(paramName.equals("id")) {
 						id = Integer.parseInt(paramValue);
 					}
 				}
+				
 				if(id == 0) {
 					System.out.println("id를 입력해주세요.");
 					continue;
@@ -94,15 +95,62 @@ public class App {
 				
 				if(foundArticle == null) {
 					System.out.println(id + "번 게시물은 존재하지 않습니다.");
+					continue;
 				}
-				System.out.println("번호: " + foundArticle.getId());
-				System.out.println("작성: " + foundArticle.getRegDate());
-				System.out.println("수정: " + foundArticle.getUpdateDate());
-				System.out.println("제목: " + foundArticle.getTitle());
-				System.out.println("내용: " + foundArticle.getBody());
+				
+				System.out.println("번호 : " + foundArticle.getId());
+				System.out.println("작성 : " + foundArticle.getRegDate());
+				System.out.println("수정 : " + foundArticle.getUpdateDate());
+				System.out.println("제목 : " + foundArticle.getTitle());
+				System.out.println("내용 : " + foundArticle.getBody());
 			}
+			else if(command.startsWith("/usr/article/delete")) {
+				String queryString = command.indexOf("?") > 0?command.split("\\?", 2)[1]:null;
+				
+				if(queryString == null) {
+					System.out.println("id를 입력해주세요.");
+					continue;
+				}
+				
+				String[] queryStringBits = queryString.split("&");
+				
+				int id = 0;
+				
+				for(String queryStringBit : queryStringBits) {
+					String[] queryStringBitBits = queryStringBit.split("=");
+					String paramName = queryStringBitBits[0];
+					String paramValue = queryStringBitBits[1];
+					
+					if(paramName.equals("id")) {
+						id = Integer.parseInt(paramValue);
+					}
+				}
+				
+				if(id == 0) {
+					System.out.println("id를 입력해주세요.");
+					continue;
+				}
+				
+				Article foundArticle = null;
+				
+				for(Article article : articles) {
+					if(article.getId() == id) {
+						foundArticle = article;
+						break;
+					}
+				}
+				
+				if(foundArticle == null) {
+					System.out.println(id + "번 게시물은 존재하지 않습니다.");
+					continue;
+				}
+				
+				articles.remove(articles.indexOf(foundArticle));
+				System.out.println(id + "번 게시물이 삭제 되었습니다.");
+			}
+			
+			
 		}
-
 		System.out.println("== 텍스트 게시판 끝 ==");
 	}
 
