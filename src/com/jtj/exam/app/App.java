@@ -3,8 +3,10 @@ package com.jtj.exam.app;
 import java.util.Scanner;
 
 import com.jtj.exam.app.container.Container;
+import com.jtj.exam.app.controller.Controller;
 import com.jtj.exam.app.controller.UsrArticleController;
 import com.jtj.exam.app.controller.UsrMemberController;
+import com.jtj.exam.app.controller.UsrSystemController;
 import com.jtj.exam.app.dao.Member;
 
 public class App {
@@ -18,8 +20,6 @@ public class App {
 	public void run() {
 		System.out.println("== 텍스트 게시판 시작 ==");
 
-		UsrArticleController usrArticleController = new UsrArticleController();
-		UsrMemberController usrMemberController = new UsrMemberController();
 		Session session = Container.getSession();
 		
 		while (true) {
@@ -36,22 +36,36 @@ public class App {
 			
 			Rq rq = new Rq(command);
 		
-			if (rq.isValid == false) {
+			if (rq.isValid() == false) {
 				System.out.printf("명령어가 올바르지 않습니다.\n");
 				continue;
 			}
+			
+			Controller controller = getControllerByRequestUri(rq);
 
-			if (rq.getControllerTypeCode().equals("usr")) {
-				if(rq.getControllerName().equals("article")) {
-					usrArticleController.performAction(rq);
-				} else if(rq.getControllerName().equals("member")){
-					usrMemberController.performAction(rq);
-				}else if (rq.getActionPath().equals("/usr/system/exit")) {
-					System.out.println("프로그램을 종료 합니다.");
-					break;
-				} 
+			controller.performAction(rq);
+			
+			if(rq.getActionPath().equals("/usr/system/exit")) {
+				break;
 			}
+		
 		}
 		System.out.println("== 텍스트 게시판 끝 ==");
+	}
+
+	private Controller getControllerByRequestUri(Rq rq) {
+		switch( rq.getControllerTypeCode()) {
+		case "usr":
+			switch (rq.getControllerName()) {
+			case "article":
+				return Container.getUsrArticleController();
+			case "member":
+				return Container.getUsrMemberController();
+			case "system":
+				return Container.getUsrSystemController();	
+			}
+			break;	
+		}
+		return null;
 	}
 }

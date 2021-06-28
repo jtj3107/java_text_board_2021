@@ -10,7 +10,7 @@ import com.jtj.exam.app.Rq;
 import com.jtj.exam.app.container.Container;
 import com.jtj.exam.app.dao.Member;
 
-public class UsrMemberController {
+public class UsrMemberController extends Controller{
 	private List<Member> members;
 	private int lastMemberId;
 	private Scanner sc;

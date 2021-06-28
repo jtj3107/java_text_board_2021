@@ -9,7 +9,7 @@ import com.jtj.exam.app.Rq;
 import com.jtj.exam.app.container.Container;
 import com.jtj.exam.app.dao.Article;
 
-public class UsrArticleController {
+public class UsrArticleController extends Controller{
 	private List<Article> articles;
 	private int lastArticleId;
 	private Scanner sc;
