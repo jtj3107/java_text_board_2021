@@ -3,6 +3,9 @@ package com.jtj.exam.app;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jtj.exam.app.container.Container;
+import com.jtj.exam.app.dao.Member;
+
 public class Rq {
 	private Map<String, String> params;
 	private String command;
@@ -63,5 +66,21 @@ public class Rq {
 
 	public Object getControllerTypeCode() {
 		return controllerTypeName;
+	}
+
+	public Object getControllerName() {
+		return controllerName;
+	}
+
+	public void setSessionAttr(String key, Object value) {
+		Session session = Container.getSession();
+		
+		session.setAttribute(key, value);
+	}
+
+	public void removeSessionAttr(String key) {
+		Session session = Container.getSession();
+		
+		session.removeAttribute(key);
 	}
 }
