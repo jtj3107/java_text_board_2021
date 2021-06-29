@@ -1,51 +1,39 @@
 package com.jtj.exam.app.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import com.jtj.exam.Util;
 import com.jtj.exam.app.Rq;
 import com.jtj.exam.app.container.Container;
 import com.jtj.exam.app.dao.Article;
+import com.jtj.exam.app.dao.Board;
+import com.jtj.exam.app.dao.Member;
+import com.jtj.exam.app.service.ArticleService;
+import com.jtj.exam.app.service.BoardService;
+import com.jtj.exam.app.service.MemberService;
 
-public class UsrArticleController extends Controller{
-	private List<Article> articles;
-	private int lastArticleId;
+public class UsrArticleController extends Controller {
+	private ArticleService articleService;
 	private Scanner sc;
+	private BoardService boardService;
+	private MemberService memberService;
 
 	public UsrArticleController() {
-		articles = new ArrayList<>();
-		lastArticleId = 0;
+		articleService = Container.getArticleService();
 		sc = Container.getSc();
+		boardService = Container.getBoardService();
+		memberService = Container.getMemberService();
 
 		// 테스트 게시물 만들기
 		makeTestData();
 	}
 
 	private void makeTestData() {
-		for (int i = 1; i <= 10; i++) {
-			String title = "제목" + i;
-			String body = "내용" + i;
-			int id = lastArticleId + 1;
-			String regDate = Util.getNowDateStr();
-			String updateDate = Util.getNowDateStr();
-			Article article = new Article(id, regDate, updateDate, title, body);
-
-			articles.add(article);
-			lastArticleId = id;
-		}		
+		boardService.makeTestData();
+		articleService.makeTestData();
 	}
 
-	private Article getArticleById(int id) {
-		for (Article article : articles) {
-			if (article.getId() == id) {
-				return article;
-			}
-		}
-		return null;
-	}
-
+	@Override
 	public void performAction(Rq rq) {
 		if (rq.getActionPath().equals("/usr/article/write")) {
 			actionWrite(rq);
@@ -68,10 +56,17 @@ public class UsrArticleController extends Controller{
 			return;
 		}
 
-		Article foundArticle = getArticleById(id);
+		Article article = articleService.getArticleById(id);
 
-		if (foundArticle == null) {
+		if (article == null) {
 			System.out.println(id + "번 게시물은 존재하지 않습니다.");
+			return;
+		}
+
+		int loginedMemberId = rq.getLogineMemberId();
+
+		if (article.getMemberId() != loginedMemberId) {
+			System.out.println("해당 게시물 작성자만 수정 가능합니다.");
 			return;
 		}
 
@@ -81,8 +76,8 @@ public class UsrArticleController extends Controller{
 		System.out.println("새로운 내용: ");
 		String body = sc.nextLine();
 
-		foundArticle.setTitle(title);
-		foundArticle.setBody(body);
+		article.setTitle(title);
+		article.setBody(body);
 
 		System.out.println(id + "번 게시물이 수정되었습니다.");
 	}
@@ -95,14 +90,21 @@ public class UsrArticleController extends Controller{
 			return;
 		}
 
-		Article foundArticle = getArticleById(id);
+		Article article = articleService.getArticleById(id);
 
-		if (foundArticle == null) {
+		if (article == null) {
 			System.out.println(id + "번 게시물은 존재하지 않습니다.");
 			return;
 		}
 
-		articles.remove(foundArticle);
+		int loginedMemberId = rq.getLogineMemberId();
+
+		if (article.getMemberId() != loginedMemberId) {
+			System.out.println("해당 게시물 작성자만 삭제 가능합니다.");
+			return;
+		}
+
+		articleService.deleteArticle(article.getId());
 		System.out.println(id + "번 게시물이 삭제 되었습니다.");
 	}
 
@@ -114,43 +116,64 @@ public class UsrArticleController extends Controller{
 			return;
 		}
 
-		Article foundArticle = getArticleById(id);
+		Article article = articleService.getArticleById(id);
 
-		if (foundArticle == null) {
+		if (article == null) {
 			System.out.println(id + "번 게시물은 존재하지 않습니다.");
 			return;
 		}
+		Board board = boardService.getBoardById(article.getBoardId());
+		Member member = memberService.getMemberById(article.getMemberId());
 
-		System.out.println("번호 : " + foundArticle.getId());
-		System.out.println("작성 : " + foundArticle.getRegDate());
-		System.out.println("수정 : " + foundArticle.getUpdateDate());
-		System.out.println("제목 : " + foundArticle.getTitle());
-		System.out.println("내용 : " + foundArticle.getBody());
+		System.out.println(board.getName() + "게시판");
+		System.out.println("번호 : " + article.getId());
+		System.out.println("작성 : " + article.getRegDate());
+		System.out.println("수정 : " + article.getUpdateDate());
+		System.out.println("제목 : " + article.getTitle());
+		System.out.println("내용 : " + article.getBody());
+		System.out.println("작성자 : " + member.getNickName());
 	}
 
 	private void actionList(Rq rq) {
-		System.out.println("번호/등록날짜/제목");
+		List<Article> articles = articleService.getArticles();
+
+		System.out.println("게시판이름/번호/등록날짜/제목/작성자");
 		for (int i = articles.size() - 1; i >= 0; i--) {
 			Article article = articles.get(i);
-			System.out.println(article.getId() + "/" + article.getRegDate() + "/" + article.getTitle());
+			Board board = boardService.getBoardById(article.getBoardId());
+			Member member = memberService.getMemberById(article.getMemberId());
+
+			System.out.println(board.getName() + "/" + article.getId() + "/" + article.getRegDate() + "/"
+					+ article.getTitle() + "/" + member.getNickName());
 		}
 	}
 
 	private void actionWrite(Rq rq) {
-		System.out.println("게시물을 등록 합니다.");
+		int boardId = rq.getIntParam("boardId", 0);
+
+		if (boardId == 0) {
+			System.out.println("boardId를 입력해주세요.");
+			return;
+		}
+
+		Board board = boardService.getBoardById(boardId);
+
+		if (board == null) {
+			System.out.println("존재하지 않는 게시판 번호입니다.");
+			return;
+		}
+
+		System.out.println("== " + board.getName() + "게시판 글작성 ==");
 
 		System.out.println("제목을 입력해주세요");
 		String title = sc.nextLine();
 		System.out.println("내용을 입력해주세요");
 		String body = sc.nextLine();
 
-		int id = lastArticleId + 1;
-		String regDate = Util.getNowDateStr();
-		String updateDate = Util.getNowDateStr();
-		Article article = new Article(id, regDate, updateDate, title, body);
+		int loginedMemberId = rq.getLogineMemberId();
 
-		articles.add(article);
-		lastArticleId = id;
+		int id = articleService.write(board.getId(), loginedMemberId, title, body);
+
 		System.out.println(id + "번 게시물이 생성되었습니다.");
 	}
 

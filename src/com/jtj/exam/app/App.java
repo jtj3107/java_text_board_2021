@@ -1,13 +1,13 @@
 package com.jtj.exam.app;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import com.jtj.exam.app.container.Container;
 import com.jtj.exam.app.controller.Controller;
-import com.jtj.exam.app.controller.UsrArticleController;
-import com.jtj.exam.app.controller.UsrMemberController;
-import com.jtj.exam.app.controller.UsrSystemController;
 import com.jtj.exam.app.dao.Member;
+import com.jtj.exam.app.interseptor.Interceptor;
 
 public class App {
 
@@ -17,44 +17,71 @@ public class App {
 		sc = Container.getSc();
 	}
 
+	private void forTestLoginByMemberId(int id) {
+		Member member = Container.getMemberService().getMemberById(id);
+		new Rq().login(member);
+	}
+	
+
 	public void run() {
 		System.out.println("== 텍스트 게시판 시작 ==");
 
-		Session session = Container.getSession();
+		// 테스트 로그인
+		forTestLoginByMemberId(1);
 		
 		while (true) {
-			Member loginedMember = (Member)session.getAttribute("loginedMember");
 			String promprName = "명령어";
-			
-			if( loginedMember != null) {
+
+			Rq rq = new Rq();
+
+			Member loginedMember = rq.getLogineMember();
+
+			if (loginedMember != null) {
 				promprName = loginedMember.getNickName();
 			}
-			
+
 			System.out.print(promprName + ") ");
 
-			String command = sc.nextLine();
-			
-			Rq rq = new Rq(command);
-		
+			String command = sc.nextLine().trim();
+
+			rq.setCommand(command);
+
 			if (rq.isValid() == false) {
 				System.out.printf("명령어가 올바르지 않습니다.\n");
 				continue;
 			}
-			
-			Controller controller = getControllerByRequestUri(rq);
 
+			if (runInterceptors(rq) == false) {
+				continue;
+			}
+
+			Controller controller = getControllerByRequestUri(rq);
 			controller.performAction(rq);
-			
-			if(rq.getActionPath().equals("/usr/system/exit")) {
+
+			if (rq.getActionPath().equals("/usr/system/exit")) {
 				break;
 			}
-		
+
 		}
 		System.out.println("== 텍스트 게시판 끝 ==");
 	}
 
+	private boolean runInterceptors(Rq rq) {
+		List<Interceptor> interceptors = new ArrayList<>();
+
+		interceptors.add(Container.getNeedLoginInterceptor());
+		interceptors.add(Container.getNeedLogoutInterceptor());
+
+		for (Interceptor interceptor : interceptors) {
+			if (interceptor.run(rq) == false) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private Controller getControllerByRequestUri(Rq rq) {
-		switch( rq.getControllerTypeCode()) {
+		switch (rq.getControllerTypeCode()) {
 		case "usr":
 			switch (rq.getControllerName()) {
 			case "article":
@@ -62,9 +89,9 @@ public class App {
 			case "member":
 				return Container.getUsrMemberController();
 			case "system":
-				return Container.getUsrSystemController();	
+				return Container.getUsrSystemController();
 			}
-			break;	
+			break;
 		}
 		return null;
 	}

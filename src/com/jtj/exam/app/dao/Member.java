@@ -1,7 +1,11 @@
 package com.jtj.exam.app.dao;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class Member {
 	private int id;
@@ -11,17 +15,5 @@ public class Member {
 	private String loginPw;
 	private String name;
 	private String nickName;
-	
-	public Member(int id, String regDate, String updateDate, String loginId, String loginPw, String name,
-			String nickName) {
-		super();
-		this.id = id;
-		this.regDate = regDate;
-		this.updateDate = updateDate;
-		this.loginId = loginId;
-		this.loginPw = loginPw;
-		this.name = name;
-		this.nickName = nickName;
-	}
 	
 }
