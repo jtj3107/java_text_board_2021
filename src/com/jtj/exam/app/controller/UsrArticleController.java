@@ -135,7 +135,11 @@ public class UsrArticleController extends Controller {
 	}
 
 	private void actionList(Rq rq) {
-		List<Article> articles = articleService.getArticles();
+		int page = rq.getIntParam("page", 1);
+		
+		
+		
+		List<Article> articles = articleService.filteredArticles(page, 10);
 
 		System.out.println("게시판이름/번호/등록날짜/제목/작성자");
 		for (int i = articles.size() - 1; i >= 0; i--) {

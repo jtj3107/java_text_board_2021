@@ -9,10 +9,12 @@ import com.jtj.exam.app.dao.Article;
 public class ArticleRepository {
 	private int lastId;
 	private List<Article> articles;
+	private List<Article> filteredArticles;
 
 	public ArticleRepository() {
 		lastId = 0;
 		articles = new ArrayList<>();
+		filteredArticles = new ArrayList<>();
 	}
 
 	public int write(int boardId, int memberId, String title, String body) {
@@ -47,6 +49,23 @@ public class ArticleRepository {
 
 	public List<Article> getArticles() {
 		return articles;
+	}
+
+	public List<Article> filteredArticles(int page, int pageCount) {
+		int fromIndex = (page -1) * pageCount;
+		int startIndex = articles.size() -1 - fromIndex;
+		int endIndex = startIndex - pageCount +1;
+		
+		if(endIndex < 0) {
+			endIndex = 0;
+		}
+		
+		for(int i = endIndex; i <= startIndex; i++) {
+			Article article = articles.get(i);
+			filteredArticles.add(article);	
+		}
+		
+		return filteredArticles;
 	}
 
 }

@@ -34,4 +34,7 @@ public class ArticleService {
 			write(i %2 +1, i %2 +1, title, body);		
 		}
 	}
+	public List<Article> filteredArticles(int page, int pageCount) {
+		return articleRepository.filteredArticles(page, pageCount);
+	}
 }
