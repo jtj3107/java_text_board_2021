@@ -34,7 +34,10 @@ public class ArticleService {
 			write(i %2 +1, i %2 +1, title, body);		
 		}
 	}
-	public List<Article> filteredArticles(int page, int pageCount) {
-		return articleRepository.filteredArticles(page, pageCount);
+	public List<Article> filteredArticles(int boardId, int page, int pageCount) {
+		List<Article> getFiltetedArticles = articleRepository.getFiltetedArticles(boardId);
+		List<Article> getPageFilteredArticles =  articleRepository.getPageFilteredArticles(getFiltetedArticles, page, pageCount);
+	
+		return getPageFilteredArticles;
 	}
 }
