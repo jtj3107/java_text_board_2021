@@ -34,9 +34,9 @@ public class ArticleService {
 			write(i %2 +1, i %2 +1, title, body);		
 		}
 	}
-	public List<Article> filteredArticles(int boardId, int page, int pageCount) {
-		List<Article> getFiltetedArticles = articleRepository.getFiltetedArticles(boardId);
-		List<Article> getPageFilteredArticles =  articleRepository.getPageFilteredArticles(getFiltetedArticles, page, pageCount);
+	public List<Article> filteredArticles(int boardId, String keyword, int page, int pageCount) {
+		List<Article> getKeywordFiltetedArticles = articleRepository.getKeywordFiltetedArticles(boardId, keyword);
+		List<Article> getPageFilteredArticles =  articleRepository.getPageFilteredArticles(getKeywordFiltetedArticles, page, pageCount);
 	
 		return getPageFilteredArticles;
 	}

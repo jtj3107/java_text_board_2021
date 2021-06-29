@@ -1,5 +1,6 @@
 package com.jtj.exam.app;
 
+import java.lang.invoke.StringConcatException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,6 +71,14 @@ public class Rq {
 			return defaultValue;
 		}
 	}
+	
+	public String getStrParam(String paramName, String defaultValue) {
+		if (params.containsKey(paramName) == false) {
+			return defaultValue;
+		}
+		return params.get(paramName);
+	}
+
 
 	private void setSessionAttr(String key, Object value) {
 		Session session = Container.getSession();

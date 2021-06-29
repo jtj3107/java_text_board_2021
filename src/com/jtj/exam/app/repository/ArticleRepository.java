@@ -9,7 +9,7 @@ import com.jtj.exam.app.dao.Article;
 public class ArticleRepository {
 	private int lastId;
 	private List<Article> articles;
-	
+
 	public ArticleRepository() {
 		lastId = 0;
 		articles = new ArrayList<>();
@@ -20,7 +20,7 @@ public class ArticleRepository {
 		String regDate = Util.getNowDateStr();
 		String updateDate = regDate;
 
-		Article article = new Article(id, regDate, updateDate, boardId, memberId,title, body);
+		Article article = new Article(id, regDate, updateDate, boardId, memberId, title, body);
 		articles.add(article);
 
 		lastId = id;
@@ -39,8 +39,8 @@ public class ArticleRepository {
 
 	public void DeleteArticle(int id) {
 		Article article = getArticleById(id);
-		
-		if(article != null) {
+
+		if (article != null) {
 			articles.remove(article);
 		}
 	}
@@ -51,33 +51,41 @@ public class ArticleRepository {
 
 	public List<Article> getPageFilteredArticles(List<Article> boardArticles, int page, int pageCount) {
 		List<Article> filteredArticles = new ArrayList<>();
-		
-		int fromIndex = (page -1) * pageCount;
-		int startIndex = boardArticles.size() -1 - fromIndex;
-		int endIndex = startIndex - pageCount +1;
-		
-		if(endIndex < 0) {
+
+		int fromIndex = (page - 1) * pageCount;
+		int startIndex = boardArticles.size() - 1 - fromIndex;
+		int endIndex = startIndex - pageCount + 1;
+
+		if (endIndex < 0) {
 			endIndex = 0;
 		}
-		
-		for(int i = endIndex; i <= startIndex; i++) {
+
+		for (int i = endIndex; i <= startIndex; i++) {
 			Article article = boardArticles.get(i);
-			filteredArticles.add(article);	
+			filteredArticles.add(article);
 		}
-		
+
 		return filteredArticles;
 	}
 
-	public List<Article> getFiltetedArticles(int boardId) {
-		if(boardId <= 0) {
+	public List<Article> getKeywordFiltetedArticles(int boardId, String keyword) {
+		if (boardId <= 0 && keyword.isEmpty()) {
 			return articles;
 		}
 		List<Article> filteredArticles = new ArrayList<>();
-		
-		for(Article article : articles) {
-			if(article.getBoardId() == boardId) {
-				filteredArticles.add(article);
+
+		System.out.println(keyword);
+		for (Article article : articles) {
+			if (article.getBoardId() != boardId && boardId != 0) {
+				continue;
 			}
+			if (keyword.isEmpty() == false) {
+				if (article.getTitle().contains(keyword) == false) {
+					continue;
+				}
+
+			}
+			filteredArticles.add(article);
 		}
 		return filteredArticles;
 	}
